@@ -1,0 +1,23 @@
+[
+    {
+        "symbol": "SGBC",
+        "name": "Société Générale Bénin",
+        "price": 14500,
+        "change": 1.2,
+        "volume": 12500
+    },
+    {
+        "symbol": "ETIT",
+        "name": "Ecobank Transnational Inc",
+        "price": 12000,
+        "change": -0.5,
+        "volume": 8900
+    },
+    {
+        "symbol": "BOAB",
+        "name": "Bank of Africa Bénin",
+        "price": 9800,
+        "change": 2.1,
+        "volume": 7500
+    }
+]

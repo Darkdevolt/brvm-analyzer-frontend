@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>BRVM Analyzer - Simple</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        
+        header {
+            background: #0066cc;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            border-radius: 10px;
+        }
+        
+        .stocks {
+            display: grid;
+            gap: 15px;
+            margin-top: 30px;
+        }
+        
+        .stock {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>📈 BRVM Analyzer</h1>
+        <p>Analyse simple des actions BRVM</p>
+    </header>
+    
+    <div class="stocks">
+        <div class="stock">
+            <h3>SONATEL</h3>
+            <p>Prix: 15 000 FCFA</p>
+            <p>Variation: +2.5%</p>
+        </div>
+        
+        <div class="stock">
+            <h3>BOA</h3>
+            <p>Prix: 8 500 FCFA</p>
+            <p>Variation: -1.2%</p>
+        </div>
+        
+        <div class="stock">
+            <h3>ETIT</h3>
+            <p>Prix: 12 300 FCFA</p>
+            <p>Variation: +0.8%</p>
+        </div>
+    </div>
+    
+    <footer style="margin-top: 40px; text-align: center; color: #666;">
+        <p>© 2024 - BRVM Analyzer Simple Version</p>
+    </footer>
+    
+    <script>
+        // Petit JavaScript pour montrer qu'on peut
+        document.querySelectorAll('.stock').forEach(item => {
+            item.addEventListener('click', () => {
+                alert('Action cliquée!');
+            });
+        });
+    </script>
+</body>
+</html>

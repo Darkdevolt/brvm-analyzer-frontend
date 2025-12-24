@@ -1,117 +1,79 @@
-// Fonction pour charger les données depuis le fichier JSON
-async function loadStockData() {
-    try {
-        // Nous chargeons le fichier data/stocks.json
-        const response = await fetch('data/stocks.json');
-        const stocks = await response.json();
+// TRI et FILTRAGE (Nouvelles fonctions à ajouter)
+let currentSort = { column: null, order: 'asc' };
 
-        // Remplir le tableau
-        const tbody = document.getElementById('stocks-body');
-        tbody.innerHTML = '';
-
-        stocks.forEach(stock => {
-            const row = document.createElement('tr');
-            // Appliquer une classe en fonction de la variation
-            let changeClass = 'text-success';
-            if (stock.change < 0) {
-                changeClass = 'text-danger';
-            }
-
-            row.innerHTML = `
-                <td>${stock.symbol}</td>
-                <td>${stock.name}</td>
-                <td>${stock.price.toLocaleString('fr-FR')}</td>
-                <td class="${changeClass}">${stock.change > 0 ? '+' : ''}${stock.change}%</td>
-                <td>${stock.volume.toLocaleString('fr-FR')}</td>
-                <td>
-                    <button class="btn btn-sm btn-outline-primary" onclick="addToWatchlist('${stock.symbol}')">
-                        <i class="fas fa-eye"></i> Suivre
-                    </button>
-                </td>
-            `;
-            tbody.appendChild(row);
-        });
-
-        // Mettre à jour le graphique
-        updateChart(stocks);
-    } catch (error) {
-        console.error('Erreur lors du chargement des données:', error);
-        document.getElementById('stocks-body').innerHTML = `
-            <tr>
-                <td colspan="6" class="text-center text-danger">
-                    Erreur de chargement des données. Veuillez réessayer plus tard.
-                </td>
-            </tr>
-        `;
-    }
-}
-
-// Fonction pour ajouter un titre à la watchlist (stockée en localStorage)
-function addToWatchlist(symbol) {
-    let watchlist = JSON.parse(localStorage.getItem('watchlist')) || [];
-    if (!watchlist.includes(symbol)) {
-        watchlist.push(symbol);
-        localStorage.setItem('watchlist', JSON.stringify(watchlist));
-        alert(`Le titre ${symbol} a été ajouté à votre watchlist.`);
+function sortTable(columnIndex) {
+    const tbody = document.getElementById('stocks-body');
+    const rows = Array.from(tbody.querySelectorAll('tr'));
+    
+    // Détermine l'ordre de tri
+    const isNumeric = columnIndex === 2 || columnIndex === 3 || columnIndex === 7; // Colonnes prix, variation, volume
+    const multiplier = currentSort.order === 'asc' ? 1 : -1;
+    
+    rows.sort((a, b) => {
+        const aCell = a.cells[columnIndex].textContent;
+        const bCell = b.cells[columnIndex].textContent;
+        
+        let aValue = isNumeric ? parseFloat(aCell.replace(/[^\d.-]/g, '')) : aCell;
+        let bValue = isNumeric ? parseFloat(bCell.replace(/[^\d.-]/g, '')) : bCell;
+        
+        if (aValue < bValue) return -1 * multiplier;
+        if (aValue > bValue) return 1 * multiplier;
+        return 0;
+    });
+    
+    // Inverse l'ordre pour le prochain clic
+    if (currentSort.column === columnIndex) {
+        currentSort.order = currentSort.order === 'asc' ? 'desc' : 'asc';
     } else {
-        alert(`Le titre ${symbol} est déjà dans votre watchlist.`);
+        currentSort.column = columnIndex;
+        currentSort.order = 'asc';
+    }
+    
+    // Réinsère les lignes triées
+    rows.forEach(row => tbody.appendChild(row));
+    updateSortIcons(columnIndex);
+}
+
+function updateSortIcons(activeColumn) {
+    // Met à jour les icônes de tri dans les en-têtes
+    document.querySelectorAll('th i').forEach(icon => {
+        icon.className = 'fas fa-sort';
+    });
+    
+    const activeTh = document.querySelectorAll('th')[activeColumn];
+    if (activeTh && currentSort.column === activeColumn) {
+        const icon = activeTh.querySelector('i');
+        if (icon) {
+            icon.className = currentSort.order === 'asc' ? 'fas fa-sort-up' : 'fas fa-sort-down';
+        }
     }
 }
 
-// Fonction pour mettre à jour le graphique avec Chart.js
-function updateChart(stocks) {
-    const ctx = document.getElementById('price-chart').getContext('2d');
-
-    // Trier les titres par prix décroissant pour le graphique
-    const sortedStocks = [...stocks].sort((a, b) => b.price - a.price);
-
-    const labels = sortedStocks.map(stock => stock.symbol);
-    const prices = sortedStocks.map(stock => stock.price);
-
-    // Détruire le graphique précédent s'il existe
-    if (window.priceChart) {
-        window.priceChart.destroy();
-    }
-
-    window.priceChart = new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: labels,
-            datasets: [{
-                label: 'Prix (XOF)',
-                data: prices,
-                backgroundColor: 'rgba(54, 162, 235, 0.5)',
-                borderColor: 'rgba(54, 162, 235, 1)',
-                borderWidth: 1
-            }]
-        },
-        options: {
-            responsive: true,
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    ticks: {
-                        callback: function(value) {
-                            return value.toLocaleString('fr-FR') + ' XOF';
-                        }
-                    }
-                }
-            },
-            plugins: {
-                legend: {
-                    display: false
-                },
-                tooltip: {
-                    callbacks: {
-                        label: function(context) {
-                            return `Prix: ${context.parsed.y.toLocaleString('fr-FR')} XOF`;
-                        }
-                    }
-                }
-            }
-        }
+function filterTable() {
+    const input = document.getElementById('search-input').value.toLowerCase();
+    const rows = document.querySelectorAll('#stocks-body tr');
+    
+    rows.forEach(row => {
+        const text = row.textContent.toLowerCase();
+        row.style.display = text.includes(input) ? '' : 'none';
     });
 }
 
-// Charger les données au chargement de la page
-document.addEventListener('DOMContentLoaded', loadStockData);
+// MODAL pour les détails (Nouvelle fonction)
+function showDetails(stockSymbol) {
+    // Trouve les données du stock
+    const stock = allStocks.find(s => s.symbol === stockSymbol);
+    if (!stock) return;
+    
+    // Remplit la modal (tu dois ajouter la modal HTML)
+    document.getElementById('detail-symbol').textContent = stock.symbol;
+    document.getElementById('detail-name').textContent = stock.name;
+    document.getElementById('detail-price').textContent = formatCurrency(stock.last_price);
+    document.getElementById('detail-change').textContent = `${stock.variation.toFixed(2)}%`;
+    document.getElementById('detail-change').className = stock.variation > 0 ? 'positive' : 'negative';
+    document.getElementById('detail-volume').textContent = formatNumber(stock.volume);
+    
+    // Affiche la modal
+    const modal = new bootstrap.Modal(document.getElementById('stockModal'));
+    modal.show();
+}

@@ -3,16 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Observatoire BRVM</title>
-    <link rel="stylesheet" href="style.css">
+    <title>Observatoire BRVM - Cours Boursiers en Temps Réel</title>
+    
+    <!-- CSS Libraries -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="style.css">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="https://img.icons8.com/color/48/stock-exchange.png">
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow">
         <div class="container">
             <a class="navbar-brand" href="#">
-                <i class="fas fa-chart-line"></i> Observatoire BRVM
+                <i class="fas fa-chart-line me-2"></i>
+                <span class="fw-bold">Observatoire BRVM</span>
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
@@ -20,68 +30,356 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item">
-                        <a class="nav-link active" href="index.html">Accueil</a>
+                        <a class="nav-link active" href="index.html">
+                            <i class="fas fa-home me-1"></i> Accueil
+                        </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="about.html">À propos</a>
+                        <a class="nav-link" href="#" id="refresh-btn">
+                            <i class="fas fa-sync-alt me-1"></i> Actualiser
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#aboutModal">
+                            <i class="fas fa-info-circle me-1"></i> À propos
+                        </a>
                     </li>
                 </ul>
             </div>
         </div>
     </nav>
 
-    <div class="container mt-4">
-        <h1 class="text-center mb-4">Cours des titres BRVM</h1>
-        <div class="row">
-            <div class="col-md-12">
-                <div class="card">
-                    <div class="card-header">
-                        <h5 class="card-title">Liste des titres</h5>
+    <!-- Main Container -->
+    <div class="container-fluid py-4">
+        <!-- Header -->
+        <div class="row mb-4">
+            <div class="col-lg-8">
+                <h1 class="display-6 fw-bold text-primary">
+                    <i class="fas fa-globe-africa me-2"></i>Marché BRVM
+                </h1>
+                <p class="lead">
+                    Suivez en temps réel les cours des actions cotées à la Bourse Régionale des Valeurs Mobilières
+                </p>
+                <div class="d-flex align-items-center">
+                    <div class="me-3">
+                        <span class="badge bg-light text-dark">
+                            <i class="fas fa-clock me-1"></i>
+                            <span id="update-time">Chargement...</span>
+                        </span>
                     </div>
-                    <div class="card-body">
-                        <div class="table-responsive">
-                            <table class="table table-hover" id="stocks-table">
-                                <thead>
-                                    <tr>
-                                        <th>Symbole</th>
-                                        <th>Société</th>
-                                        <th>Dernier cours (XOF)</th>
-                                        <th>Variation (%)</th>
-                                        <th>Volume</th>
-                                        <th>Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="stocks-body">
-                                    <!-- Les données seront insérées ici par JavaScript -->
-                                </tbody>
-                            </table>
+                    <div>
+                        <span class="badge bg-success" id="stocks-count">
+                            <i class="fas fa-chart-bar me-1"></i>
+                            <span id="total-stocks">0</span> titres
+                        </span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4 text-lg-end">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body py-2">
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-0">
+                                <i class="fas fa-search text-muted"></i>
+                            </span>
+                            <input type="text" id="search-input" class="form-control border-0" 
+                                   placeholder="Rechercher un titre...">
+                            <button class="btn btn-outline-secondary" type="button" id="clear-search">
+                                <i class="fas fa-times"></i>
+                            </button>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
 
+        <!-- Indices Cards -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="card shadow-sm border-0 h-100">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="card-subtitle mb-2 text-muted">BRVM Composite</h6>
+                                <h3 class="card-title mb-0" id="indice-composite">-</h3>
+                            </div>
+                            <div class="indice-icon">
+                                <i class="fas fa-chart-pie fa-2x text-primary"></i>
+                            </div>
+                        </div>
+                        <div class="mt-2">
+                            <span class="badge" id="indice-composite-change">0.00%</span>
+                            <small class="text-muted">vs séance précédente</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card shadow-sm border-0 h-100">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="card-subtitle mb-2 text-muted">BRVM 10</h6>
+                                <h3 class="card-title mb-0" id="indice-10">-</h3>
+                            </div>
+                            <div class="indice-icon">
+                                <i class="fas fa-star fa-2x text-warning"></i>
+                            </div>
+                        </div>
+                        <div class="mt-2">
+                            <span class="badge" id="indice-10-change">0.00%</span>
+                            <small class="text-muted">top 10 valeurs</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card shadow-sm border-0 h-100">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="card-subtitle mb-2 text-muted">Volume Total</h6>
+                                <h3 class="card-title mb-0" id="total-volume">-</h3>
+                            </div>
+                            <div class="indice-icon">
+                                <i class="fas fa-exchange-alt fa-2x text-success"></i>
+                            </div>
+                        </div>
+                        <div class="mt-2">
+                            <small class="text-muted">titres échangés</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card shadow-sm border-0 h-100">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="card-subtitle mb-2 text-muted">Variation Moyenne</h6>
+                                <h3 class="card-title mb-0" id="avg-change">-</h3>
+                            </div>
+                            <div class="indice-icon">
+                                <i class="fas fa-balance-scale fa-2x text-info"></i>
+                            </div>
+                        </div>
+                        <div class="mt-2">
+                            <small class="text-muted">marché</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Table -->
+        <div class="card shadow border-0">
+            <div class="card-header bg-white border-0 py-3">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-table me-2"></i>Cours des Actions
+                    </h5>
+                    <div class="btn-group" role="group">
+                        <button type="button" class="btn btn-outline-primary btn-sm" onclick="sortTable('symbol')">
+                            <i class="fas fa-sort-alpha-down"></i> Symbole
+                        </button>
+                        <button type="button" class="btn btn-outline-primary btn-sm" onclick="sortTable('change', true)">
+                            <i class="fas fa-sort-amount-down"></i> Variation
+                        </button>
+                        <button type="button" class="btn btn-outline-primary btn-sm" onclick="sortTable('volume', true)">
+                            <i class="fas fa-chart-bar"></i> Volume
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0" id="stocks-table">
+                        <thead class="table-light">
+                            <tr>
+                                <th width="10%">Symbole</th>
+                                <th width="25%">Société</th>
+                                <th width="12%">Dernier Cours</th>
+                                <th width="12%">Variation</th>
+                                <th width="12%">Volume</th>
+                                <th width="12%">Valeur</th>
+                                <th width="17%" class="text-center">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="stocks-body">
+                            <!-- Data loaded by JavaScript -->
+                            <tr id="loading-row">
+                                <td colspan="7" class="text-center py-5">
+                                    <div class="spinner-border text-primary" role="status">
+                                        <span class="visually-hidden">Chargement...</span>
+                                    </div>
+                                    <p class="mt-2 text-muted">Chargement des données boursières...</p>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="card-footer bg-white border-0 py-3">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="auto-refresh" checked>
+                            <label class="form-check-label" for="auto-refresh">
+                                <i class="fas fa-redo me-1"></i> Actualisation automatique (5 min)
+                            </label>
+                        </div>
+                    </div>
+                    <div class="col-md-6 text-end">
+                        <div class="btn-group">
+                            <button class="btn btn-sm btn-outline-secondary" onclick="exportToCSV()">
+                                <i class="fas fa-download me-1"></i> Exporter
+                            </button>
+                            <button class="btn btn-sm btn-outline-secondary" onclick="printTable()">
+                                <i class="fas fa-print me-1"></i> Imprimer
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts Section -->
         <div class="row mt-4">
-            <div class="col-md-12">
-                <div class="card">
-                    <div class="card-header">
-                        <h5 class="card-title">Graphique d'évolution</h5>
+            <div class="col-md-8">
+                <div class="card shadow border-0 h-100">
+                    <div class="card-header bg-white border-0">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-chart-line me-2"></i>Top 10 des Performances
+                        </h5>
                     </div>
                     <div class="card-body">
-                        <canvas id="price-chart"></canvas>
+                        <canvas id="performance-chart" height="250"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card shadow border-0 h-100">
+                    <div class="card-header bg-white border-0">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-chart-pie me-2"></i>Répartition par Secteur
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="sector-chart" height="250"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="mt-5 pt-4 border-top">
+            <div class="row">
+                <div class="col-md-6">
+                    <h6>Observatoire BRVM</h6>
+                    <p class="text-muted small">
+                        Plateforme non-officielle de suivi des marchés boursiers de la BRVM.
+                        Données informatives uniquement.
+                    </p>
+                </div>
+                <div class="col-md-6 text-end">
+                    <p class="small text-muted">
+                        <i class="fas fa-exclamation-triangle me-1"></i>
+                        Les données sont récupérées automatiquement depuis le site officiel BRVM.
+                        Dernière mise à jour : <span id="footer-update">-</span>
+                    </p>
+                    <div class="mt-2">
+                        <span class="badge bg-light text-dark me-2">
+                            <i class="fas fa-code"></i> Python
+                        </span>
+                        <span class="badge bg-light text-dark me-2">
+                            <i class="fab fa-js"></i> JavaScript
+                        </span>
+                        <span class="badge bg-light text-dark">
+                            <i class="fab fa-github"></i> GitHub
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Stock Details Modal -->
+    <div class="modal fade" id="stockModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Détails du Titre</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <table class="table table-sm">
+                                <tr><th>Symbole:</th><td id="detail-symbol">-</td></tr>
+                                <tr><th>Société:</th><td id="detail-name">-</td></tr>
+                                <tr><th>Dernier cours:</th><td id="detail-price">-</td></tr>
+                                <tr><th>Variation:</th><td id="detail-change">-</td></tr>
+                                <tr><th>Volume:</th><td id="detail-volume">-</td></tr>
+                                <tr><th>Valeur:</th><td id="detail-value">-</td></tr>
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h6>Évolution récente</h6>
+                                    <canvas id="detail-chart"></canvas>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <footer class="bg-dark text-white text-center py-3 mt-4">
-        <p>© 2023 Observatoire BRVM. Données mises à jour quotidiennement.</p>
-        <p><em>Ce site est un projet éducatif et ne fournit pas de conseils financiers.</em></p>
-    </footer>
+    <!-- About Modal -->
+    <div class="modal fade" id="aboutModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="fas fa-info-circle me-2"></i>À propos
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <h6>Observatoire BRVM</h6>
+                    <p>Plateforme de visualisation des données boursières de la Bourse Régionale des Valeurs Mobilières.</p>
+                    
+                    <h6 class="mt-3">Fonctionnalités</h6>
+                    <ul>
+                        <li>Données en temps réel (actualisées toutes les 5 minutes)</li>
+                        <li>Tableau interactif avec tri et recherche</li>
+                        <li>Graphiques de performance</li>
+                        <li>Indicateurs principaux du marché</li>
+                        <li>Export des données</li>
+                    </ul>
+                    
+                    <h6 class="mt-3">Source des données</h6>
+                    <p>Les données sont récupérées automatiquement depuis le site officiel de la BRVM.</p>
+                    
+                    <div class="alert alert-warning mt-3">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        <strong>Avertissement :</strong> Ce site est à but informatif uniquement.
+                        Pour des décisions d'investissement, consultez un conseiller financier.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
+    <!-- JavaScript Libraries -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+    
+    <!-- Custom JavaScript -->
     <script src="script.js"></script>
 </body>
 </html>
